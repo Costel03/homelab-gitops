@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 80
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.56.25"
+
+ingress:
+  enabled: true
+  className: nginx
+  host: my-app.local
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

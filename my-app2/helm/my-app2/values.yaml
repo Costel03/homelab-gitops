@@ -1,0 +1,42 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 80
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.56.24"
+
+ingress:
+  enabled: false
+  className: nginx
+  host: my-app2.local
+
+# Istio Gateway routes external traffic to this app
+# Host 192.168.56.27 → istio ingressgateway → my-app2 service
+istio:
+  enabled: true
+  host: my-app2.local
+  port: 80
+  selector:
+    istio: ingressgateway
+
+# VPA: updateMode options:
+#   Off      - recommendations only, no changes applied
+#   Initial  - sets resources only on new pods
+#   Auto     - evicts and recreates pods with updated resources
+vpa:
+  updateMode: "Auto"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 128Mi

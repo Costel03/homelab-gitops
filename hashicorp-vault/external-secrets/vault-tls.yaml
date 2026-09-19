@@ -1,0 +1,26 @@
+# TLS certificate for vault.local — used by the NGINX Ingress.
+# Vault engine: tls (KV v2)   secret path: vault   keys: tls.crt, tls.key
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: vault-tls
+  namespace: hashicorp-vault
+spec:
+  refreshInterval: 24h
+  secretStoreRef:
+    name: vault-tls
+    kind: ClusterSecretStore
+  target:
+    name: vault-tls
+    creationPolicy: Owner
+    template:
+      type: kubernetes.io/tls
+  data:
+  - secretKey: tls.crt
+    remoteRef:
+      key: vault
+      property: tls.crt
+  - secretKey: tls.key
+    remoteRef:
+      key: vault
+      property: tls.key

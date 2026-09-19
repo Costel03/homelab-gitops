@@ -1,0 +1,17 @@
+# Expose the Istio IngressGateway via MetalLB
+service:
+  type: LoadBalancer
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.56.26"
+
+# Label used by Gateway resources to select this gateway
+labels:
+  istio: ingressgateway
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

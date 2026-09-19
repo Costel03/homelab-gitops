@@ -1,0 +1,38 @@
+{{- if .Values.apps.hashicorpVault.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hashicorp-vault
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+  - repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    targetRevision: 0.32.0
+    helm:
+      valueFiles:
+      - $values/hashicorp-vault/helm/hashicorp-vault/values.yaml
+  - repoURL: {{ .Values.repo.url }}
+    targetRevision: {{ .Values.repo.revision }}
+    ref: values
+  - repoURL: {{ .Values.repo.url }}
+    targetRevision: {{ .Values.repo.revision }}
+    path: hashicorp-vault/external-secrets
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hashicorp-vault
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+{{- end }}

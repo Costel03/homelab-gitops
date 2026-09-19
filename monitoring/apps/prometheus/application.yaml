@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+  - repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus
+    targetRevision: 27.3.1
+    helm:
+      valueFiles:
+      - $values/monitoring/helm/prometheus/values.yaml
+  - repoURL: https://github.com/Costel03/k8s-homelab-gitops.git
+    targetRevision: main
+    ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

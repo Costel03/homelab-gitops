@@ -1,0 +1,35 @@
+{{- if .Values.apps.istiod.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istiod
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+  - repoURL: https://istio-release.storage.googleapis.com/charts
+    chart: istiod
+    targetRevision: 1.24.2
+    helm:
+      valueFiles:
+      - $values/istio/helm/istiod/values.yaml
+  - repoURL: {{ .Values.repo.url }}
+    targetRevision: {{ .Values.repo.revision }}
+    ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+{{- end }}

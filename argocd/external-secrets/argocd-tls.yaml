@@ -1,0 +1,26 @@
+# TLS certificate for argocd.local — ArgoCD auto-detects argocd-server-tls.
+# Vault engine: tls (KV v2)   secret path: argocd   keys: tls.crt, tls.key
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: argocd-tls
+  namespace: argocd
+spec:
+  refreshInterval: 24h
+  secretStoreRef:
+    name: vault-tls
+    kind: ClusterSecretStore
+  target:
+    name: argocd-server-tls
+    creationPolicy: Owner
+    template:
+      type: kubernetes.io/tls
+  data:
+  - secretKey: tls.crt
+    remoteRef:
+      key: argocd
+      property: tls.crt
+  - secretKey: tls.key
+    remoteRef:
+      key: argocd
+      property: tls.key

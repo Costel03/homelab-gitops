@@ -1,0 +1,26 @@
+# TLS certificate for grafana.local — used by the NGINX Ingress.
+# Vault engine: tls (KV v2)   secret path: grafana   keys: tls.crt, tls.key
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: grafana-tls
+  namespace: monitoring
+spec:
+  refreshInterval: 24h
+  secretStoreRef:
+    name: vault-tls
+    kind: ClusterSecretStore
+  target:
+    name: grafana-tls
+    creationPolicy: Owner
+    template:
+      type: kubernetes.io/tls
+  data:
+  - secretKey: tls.crt
+    remoteRef:
+      key: grafana
+      property: tls.crt
+  - secretKey: tls.key
+    remoteRef:
+      key: grafana
+      property: tls.key

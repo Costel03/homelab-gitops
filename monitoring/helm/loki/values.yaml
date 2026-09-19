@@ -1,0 +1,54 @@
+deploymentMode: SingleBinary
+
+loki:
+  auth_enabled: false
+
+  commonConfig:
+    replication_factor: 1
+
+  storage:
+    type: filesystem
+
+  schemaConfig:
+    configs:
+    - from: "2024-01-01"
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: loki_index_
+        period: 24h
+
+singleBinary:
+  replicas: 1
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: nfs-client
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Disable distributed components (not needed for single binary)
+read:
+  replicas: 0
+write:
+  replicas: 0
+backend:
+  replicas: 0
+
+gateway:
+  enabled: false
+
+# Disable caches - memcached is too heavy for a small cluster
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false

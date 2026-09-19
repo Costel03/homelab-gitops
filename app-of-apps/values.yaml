@@ -1,0 +1,36 @@
+# Overridden at bootstrap by homelab-cluster's argocd_bootstrap role, so the
+# tracked branch is set in one place rather than in every Application.
+repo:
+  url: https://github.com/Costel03/homelab-gitops.git
+  revision: main
+
+# MetalLB and the ArgoCD release itself are installed by homelab-cluster —
+# ArgoCD needs a LoadBalancer address before it can start, and cannot install
+# itself. The argocd entry here is only its ExternalSecrets.
+apps:
+  argocd:
+    enabled: true
+  hashicorpVault:
+    enabled: true
+  externalSecretsOperator:
+    enabled: true
+  nginxIngress:
+    enabled: true
+  nfs:
+    enabled: true
+  monitoring:
+    enabled: true
+  metricsServer:
+    enabled: true
+  istioBase:
+    enabled: true
+  istiod:
+    enabled: true
+  istioGateway:
+    enabled: true
+  verticalPodAutoscaler:
+    enabled: true
+  myApp:
+    enabled: true
+  myApp2:
+    enabled: true

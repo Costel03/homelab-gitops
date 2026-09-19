@@ -1,0 +1,25 @@
+# Creates the Grafana admin credentials secret from Vault.
+# Vault engine: argocd (KV v2)   secret path: grafana
+#   key: password   value: plain text Grafana admin password
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: grafana-admin
+  namespace: monitoring
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-argocd
+    kind: ClusterSecretStore
+  target:
+    name: grafana-admin-secret
+    creationPolicy: Owner
+  data:
+  - secretKey: admin-user
+    remoteRef:
+      key: grafana
+      property: username
+  - secretKey: admin-password
+    remoteRef:
+      key: grafana
+      property: password

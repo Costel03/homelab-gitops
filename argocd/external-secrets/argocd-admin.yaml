@@ -1,0 +1,32 @@
+# Creates the full argocd-secret from Vault.
+# Vault engine: argocd (KV v2)   secret path: admin
+#   key: password       value: plain text password
+#   key: server.secretkey  value: output of: openssl rand -base64 32
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: argocd-admin-password
+  namespace: argocd
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-argocd
+    kind: ClusterSecretStore
+  target:
+    name: argocd-secret
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      data:
+        admin.password: "{{ .password | bcrypt }}"
+        admin.passwordMtime: "{{ now | date \"2006-01-02T15:04:05Z\" }}"
+        server.secretkey: "{{ .serverSecretKey }}"
+  data:
+  - secretKey: password
+    remoteRef:
+      key: admin
+      property: password
+  - secretKey: serverSecretKey
+    remoteRef:
+      key: admin
+      property: server.secretkey

@@ -1,0 +1,35 @@
+{{- if .Values.apps.metricsServer.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metrics-server
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+  - repoURL: https://kubernetes-sigs.github.io/metrics-server/
+    chart: metrics-server
+    targetRevision: 3.12.2
+    helm:
+      valueFiles:
+      - $values/metrics-server/helm/metrics-server/values.yaml
+  - repoURL: {{ .Values.repo.url }}
+    targetRevision: {{ .Values.repo.revision }}
+    ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+{{- end }}

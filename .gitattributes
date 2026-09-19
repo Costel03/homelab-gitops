@@ -1,0 +1,7 @@
+# core.autocrlf=true is set globally; anything that runs inside Linux must keep
+# LF regardless — a CRLF shebang fails with "bad interpreter: ...^M".
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.iso binary
+*.vdi binary

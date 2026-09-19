@@ -1,0 +1,61 @@
+---
+# Automatically unseals Vault when it is sealed (e.g. after pod restart).
+# Requires a Secret named "vault-unseal-key" in this namespace with key "key".
+# Create it once after first vault init:
+#   kubectl create secret generic vault-unseal-key \
+#     --from-literal=key=<unseal_key_b64> \
+#     -n hashicorp-vault
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-auto-unseal
+  namespace: hashicorp-vault
+  labels:
+    app: vault-auto-unseal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-auto-unseal
+  template:
+    metadata:
+      labels:
+        app: vault-auto-unseal
+    spec:
+      containers:
+      - name: auto-unseal
+        image: hashicorp/vault:1.16.1
+        command:
+        - /bin/sh
+        - -c
+        - |
+          KEY=$(cat /vault/unseal/key)
+          while true; do
+            sleep 10
+            SEALED=$(vault status -format=json 2>/dev/null | jq -r '.sealed' 2>/dev/null)
+            if [ "$SEALED" = "true" ]; then
+              echo "Vault is sealed, unsealing..."
+              vault operator unseal "$KEY"
+            fi
+          done
+        env:
+        - name: VAULT_ADDR
+          value: http://hashicorp-vault.hashicorp-vault.svc.cluster.local:8200
+        volumeMounts:
+        - name: unseal-key
+          mountPath: /vault/unseal
+          readOnly: true
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "32Mi"
+          limits:
+            cpu: "50m"
+            memory: "64Mi"
+      volumes:
+      - name: unseal-key
+        secret:
+          secretName: vault-unseal-key
+          items:
+          - key: key
+            path: key

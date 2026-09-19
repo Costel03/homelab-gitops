@@ -1,0 +1,49 @@
+server:
+  image:
+    repository: hashicorp/vault
+    tag: "1.16.1"
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "256Mi"
+    limits:
+      cpu: "200m"
+      memory: "512Mi"
+
+  ha:
+    enabled: false
+
+  service:
+    type: ClusterIP
+    port: 8200
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+    - host: vault.local
+      paths:
+      - /
+    tls:
+    - secretName: vault-tls
+      hosts:
+      - vault.local
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Vault UI — accessible via LoadBalancer IP or Ingress
+ui:
+  enabled: true
+  serviceType: ClusterIP
+
+# Disable sidecar injector to save resources on a small cluster
+injector:
+  enabled: false

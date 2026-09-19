@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+  - repoURL: https://grafana.github.io/helm-charts
+    chart: grafana
+    targetRevision: 8.8.2
+    helm:
+      valueFiles:
+      - $values/monitoring/helm/grafana/values.yaml
+  - repoURL: https://github.com/Costel03/k8s-homelab-gitops.git
+    targetRevision: main
+    ref: values
+  - repoURL: https://github.com/Costel03/k8s-homelab-gitops.git
+    targetRevision: main
+    path: monitoring/external-secrets
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
