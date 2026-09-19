@@ -1,7 +1,7 @@
 # nginx-ingress
 
-[![App Status](https://argocd.local/api/badge?name=nginx-ingress&revision=true)](https://argocd.local/applications/nginx-ingress)
-[![App Status](https://argocd.local/api/badge?name=nginx-ingress-zot&revision=true)](https://argocd.local/applications/nginx-ingress-zot)
+[![App Status](https://argocd.homelab/api/badge?name=nginx-ingress&revision=true)](https://argocd.homelab/applications/nginx-ingress)
+[![App Status](https://argocd.homelab/api/badge?name=nginx-ingress-zot&revision=true)](https://argocd.homelab/applications/nginx-ingress-zot)
 ![NGINX](https://img.shields.io/badge/NGINX_Ingress-4.12.1-009639?logo=nginx&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-1.35-326CE5?logo=kubernetes&logoColor=white)
 
@@ -15,10 +15,10 @@ Two NGINX Ingress Controllers — each with a dedicated MetalLB LoadBalancer IP 
   Windows Host
       │
       ├── 192.168.56.22  ──▶  nginx-ingress (class: nginx)
-      │                            └── vault.local  ──▶  hashicorp-vault:8200
+      │                            └── vault.homelab  ──▶  hashicorp-vault:8200
       │
       └── 192.168.56.23  ──▶  nginx-ingress-zot (class: nginx-zot)
-                                   └── zot.local    ──▶  zot:5000
+                                   └── zot.homelab    ──▶  zot:5000
 ```
 
 Two separate controller instances means each hostname gets its own LoadBalancer IP. TLS is terminated at the controller using certs stored as Kubernetes Secrets (sourced from Vault via ExternalSecrets).
@@ -29,8 +29,8 @@ Two separate controller instances means each hostname gets its own LoadBalancer 
 
 | Name | IngressClass | LoadBalancer IP | Routes |
 |---|---|---|---|
-| `nginx-ingress` | `nginx` (default) | `192.168.56.22` | `vault.local` |
-| `nginx-ingress-zot` | `nginx-zot` | `192.168.56.23` | `zot.local` |
+| `nginx-ingress` | `nginx` (default) | `192.168.56.22` | `vault.homelab` |
+| `nginx-ingress-zot` | `nginx-zot` | `192.168.56.23` | `zot.homelab` |
 
 ---
 
@@ -87,7 +87,7 @@ metadata:
 spec:
   ingressClassName: nginx          # or nginx-zot
   rules:
-  - host: my-app.local
+  - host: my-app.homelab
     http:
       paths:
       - path: /
@@ -100,7 +100,7 @@ spec:
   tls:
   - secretName: my-app-tls
     hosts:
-    - my-app.local
+    - my-app.homelab
 ```
 
 ---

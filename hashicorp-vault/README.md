@@ -1,6 +1,6 @@
 # HashiCorp Vault
 
-[![App Status](https://argocd.local/api/badge?name=hashicorp-vault&revision=true)](https://argocd.local/applications/hashicorp-vault)
+[![App Status](https://argocd.homelab/api/badge?name=hashicorp-vault&revision=true)](https://argocd.homelab/applications/hashicorp-vault)
 ![Vault](https://img.shields.io/badge/HashiCorp_Vault-1.16.1-FFCF25?logo=vault&logoColor=black)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-1.35-326CE5?logo=kubernetes&logoColor=white)
 
@@ -14,7 +14,7 @@ Secrets store for the homelab cluster. Vault runs in standalone mode (single pod
   ┌──────────────────┐      KV v2      ┌─────────────────────────┐
   │  generate-certs  │ ──────────────▶ │   HashiCorp Vault        │
   │  (WSL script)    │                 │   ClusterIP :8200         │
-  └──────────────────┘                 │   ingress: vault.local    │
+  └──────────────────┘                 │   ingress: vault.homelab    │
                                        └──────────┬──────────────┘
                           vault token             │
   ┌──────────────────┐ ◀────────────── │ ESO ClusterSecretStores   │
@@ -37,7 +37,7 @@ Secrets store for the homelab cluster. Vault runs in standalone mode (single pod
 | Property | Value |
 |---|---|
 | Namespace | `hashicorp-vault` |
-| Access | https://vault.local (nginx ingress at 192.168.56.22) |
+| Access | https://vault.homelab (nginx ingress at 192.168.56.22) |
 | Service type | `ClusterIP` (port 8200) |
 | UI | Enabled — same URL |
 | Helm chart | `hashicorp/vault 0.29.1` |
@@ -50,7 +50,7 @@ Secrets store for the homelab cluster. Vault runs in standalone mode (single pod
 ```
 hashicorp-vault/
 ├── external-secrets/
-│   └── vault-tls.yaml            # ExternalSecret: vault.local TLS cert from Vault
+│   └── vault-tls.yaml            # ExternalSecret: vault.homelab TLS cert from Vault
 └── helm/
     └── hashicorp-vault/
         ├── Chart.yaml            # Umbrella chart (hashicorp/vault dependency)

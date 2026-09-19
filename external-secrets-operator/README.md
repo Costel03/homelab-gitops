@@ -1,6 +1,6 @@
 # External Secrets Operator
 
-[![App Status](https://argocd.local/api/badge?name=ExternalSecretsOperator&revision=true)](https://argocd.local/applications/ExternalSecretsOperator)
+[![App Status](https://argocd.homelab/api/badge?name=ExternalSecretsOperator&revision=true)](https://argocd.homelab/applications/ExternalSecretsOperator)
 ![ESO](https://img.shields.io/badge/External_Secrets-Operator-6C47FF?logo=kubernetes&logoColor=white)
 ![Vault](https://img.shields.io/badge/Backend-HashiCorp_Vault-FFCF25?logo=vault&logoColor=black)
 

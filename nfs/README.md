@@ -1,6 +1,6 @@
 # NFS
 
-[![App Status](https://argocd.local/api/badge?name=nfs&revision=true)](https://argocd.local/applications/nfs)
+[![App Status](https://argocd.homelab/api/badge?name=nfs&revision=true)](https://argocd.homelab/applications/nfs)
 ![NFS](https://img.shields.io/badge/NFS_Provisioner-nfs--client-4A90D9)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-1.35-326CE5?logo=kubernetes&logoColor=white)
 

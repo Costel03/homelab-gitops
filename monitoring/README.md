@@ -1,8 +1,8 @@
 # Monitoring
 
-[![Grafana](https://argocd.local/api/badge?name=grafana&revision=true)](https://argocd.local/applications/grafana)
-[![Prometheus](https://argocd.local/api/badge?name=prometheus&revision=true)](https://argocd.local/applications/prometheus)
-[![Loki](https://argocd.local/api/badge?name=loki&revision=true)](https://argocd.local/applications/loki)
+[![Grafana](https://argocd.homelab/api/badge?name=grafana&revision=true)](https://argocd.homelab/applications/grafana)
+[![Prometheus](https://argocd.homelab/api/badge?name=prometheus&revision=true)](https://argocd.homelab/applications/prometheus)
+[![Loki](https://argocd.homelab/api/badge?name=loki&revision=true)](https://argocd.homelab/applications/loki)
 ![Grafana](https://img.shields.io/badge/Grafana-11.x-F46800?logo=grafana&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-scrape_60s-E6522C?logo=prometheus&logoColor=white)
 ![Loki](https://img.shields.io/badge/Loki-SingleBinary-F5A800)
@@ -39,7 +39,7 @@ Full observability stack: **Prometheus** for metrics, **Loki** for logs, **Grafa
 
 | Service | Namespace | Access | LoadBalancer IP |
 |---|---|---|---|
-| Grafana | `monitoring` | https://grafana.local | `192.168.56.21:3000` |
+| Grafana | `monitoring` | https://grafana.homelab | `192.168.56.21:3000` |
 | Prometheus | `monitoring` | ClusterIP only (port 9090) | — |
 | Loki | `monitoring` | ClusterIP only (port 3100) | — |
 
@@ -55,7 +55,7 @@ monitoring/
 │   └── prometheus/application.yaml    # ArgoCD Application: prometheus
 ├── external-secrets/
 │   ├── grafana-admin.yaml             # ExternalSecret: admin password from Vault
-│   └── grafana-tls.yaml               # ExternalSecret: grafana.local TLS cert
+│   └── grafana-tls.yaml               # ExternalSecret: grafana.homelab TLS cert
 └── helm/
     ├── grafana/
     │   ├── Chart.yaml                 # grafana/grafana chart
@@ -72,7 +72,7 @@ monitoring/
 
 ## Grafana
 
-- **URL**: https://grafana.local (port 3000, HTTPS LoadBalancer)
+- **URL**: https://grafana.homelab (port 3000, HTTPS LoadBalancer)
 - **Admin credentials**: pulled from Vault (`argocd` engine, `grafana` secret key `password`)
 - **TLS**: cert from Vault (`tls` engine, `grafana` path) via ExternalSecret `grafana-tls`
 - Pre-configured datasources: Prometheus + Loki

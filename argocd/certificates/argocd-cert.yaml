@@ -1,0 +1,22 @@
+# Replaces the argocd-tls ExternalSecret. cert-manager writes the same
+# argocd-server-tls secret and renews it on its own.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: argocd-tls
+  namespace: argocd
+spec:
+  secretName: argocd-server-tls
+  commonName: argocd.homelab
+  dnsNames:
+  - argocd.homelab
+  duration: 2160h
+  renewBefore: 360h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer
+    group: cert-manager.io

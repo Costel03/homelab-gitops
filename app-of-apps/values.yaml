@@ -8,6 +8,10 @@ repo:
 # ArgoCD needs a LoadBalancer address before it can start, and cannot install
 # itself. The argocd entry here is only its ExternalSecrets.
 apps:
+  # Issues and renews every TLS cert in the cluster. Must stay enabled —
+  # ArgoCD, Vault and Grafana all get their certificates from it.
+  certManager:
+    enabled: true
   argocd:
     enabled: true
   hashicorpVault:
@@ -22,15 +26,7 @@ apps:
     enabled: true
   metricsServer:
     enabled: true
-  istioBase:
-    enabled: true
-  istiod:
-    enabled: true
-  istioGateway:
-    enabled: true
   verticalPodAutoscaler:
     enabled: true
   myApp:
-    enabled: true
-  myApp2:
     enabled: true

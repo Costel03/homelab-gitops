@@ -23,7 +23,7 @@ spec:
     ref: values
   - repoURL: {{ .Values.repo.url }}
     targetRevision: {{ .Values.repo.revision }}
-    path: hashicorp-vault/external-secrets
+    path: hashicorp-vault/certificates
 
   destination:
     server: https://kubernetes.default.svc

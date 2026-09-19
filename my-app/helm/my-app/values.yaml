@@ -15,7 +15,7 @@ service:
 ingress:
   enabled: true
   className: nginx
-  host: my-app.local
+  host: my-app.homelab
 
 hpa:
   minReplicas: 2

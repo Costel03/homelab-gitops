@@ -11,10 +11,14 @@ metadata:
 spec:
   project: default
 
-  source:
-    repoURL: {{ .Values.repo.url }}
+  sources:
+  - repoURL: {{ .Values.repo.url }}
     targetRevision: {{ .Values.repo.revision }}
     path: argocd/external-secrets
+  # TLS comes from cert-manager, not Vault — see cert-manager/issuers.
+  - repoURL: {{ .Values.repo.url }}
+    targetRevision: {{ .Values.repo.revision }}
+    path: argocd/certificates
 
   destination:
     server: https://kubernetes.default.svc

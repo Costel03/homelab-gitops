@@ -14,16 +14,16 @@ all the others.
 | Directory | What |
 |---|---|
 | `app-of-apps/` | Helm chart generating one ArgoCD Application per tool |
-| `argocd/` | ArgoCD's own ExternalSecrets (admin password, TLS) |
+| `cert-manager/` | Issues and renews every TLS cert from the homelab CA |
+| `argocd/` | ArgoCD's admin-password ExternalSecret and its Certificate |
 | `hashicorp-vault/` | Vault + the auto-unseal Deployment |
 | `external-secrets-operator/` | ESO and the Vault ClusterSecretStore |
 | `nginx-ingress/` | Ingress controller |
 | `nfs/` | nfs-subdir-external-provisioner |
 | `monitoring/` | Prometheus, Loki, Grafana |
 | `metrics-server/` | metrics-server |
-| `istio/` | base, istiod, gateway |
 | `vertical-pod-autoscaler/` | VPA |
-| `my-app/`, `my-app2/` | Demo workloads |
+| `my-app/` | My own app — nginx placeholder until it is written |
 
 Each tool directory holds `helm/<name>/values.yaml` for the upstream chart,
 plus `external-secrets/` or `templates/` for anything applied as raw manifests.
@@ -53,8 +53,21 @@ over one release.
 The Zot registry runs in WSL on the host, not in the cluster — an in-cluster
 registry cannot serve the images needed to start itself.
 
+## Certificates
+
+cert-manager owns all TLS. A self-signed ClusterIssuer mints the `homelab-ca`
+Certificate, and a CA ClusterIssuer built from it signs one Certificate per
+service — 90-day lifetime, renewed automatically 15 days before expiry. No
+script regenerates certs any more.
+
+Trust the CA once on the host:
+
+```bash
+make -C ../homelab-cluster trust-ca
+```
+
 ## Secrets
 
-None are committed. `generate-certs.sh` populates Vault, ESO reads from it and
-writes Kubernetes Secrets. Vault's root token and unseal key live in
-`~/vault-init.json` on the host.
+None are committed. `argocd/seed-vault-secrets.sh` puts the admin passwords
+into Vault; ESO reads them and writes Kubernetes Secrets. Vault's root token
+and unseal key live in `~/vault-init.json` on the host.

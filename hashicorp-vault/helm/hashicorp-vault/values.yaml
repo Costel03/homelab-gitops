@@ -23,13 +23,13 @@ server:
     enabled: true
     ingressClassName: nginx
     hosts:
-    - host: vault.local
+    - host: vault.homelab
       paths:
       - /
     tls:
     - secretName: vault-tls
       hosts:
-      - vault.local
+      - vault.homelab
     annotations:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
       nginx.ingress.kubernetes.io/ssl-redirect: "true"

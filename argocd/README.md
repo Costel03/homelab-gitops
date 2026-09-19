@@ -1,6 +1,6 @@
 # ArgoCD
 
-[![App Status](https://argocd.local/api/badge?name=argocd&revision=true)](https://argocd.local/applications/argocd)
+[![App Status](https://argocd.homelab/api/badge?name=argocd&revision=true)](https://argocd.homelab/applications/argocd)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-1.35-326CE5?logo=kubernetes&logoColor=white)
 ![ArgoCD](https://img.shields.io/badge/ArgoCD-Helm-EF7B4D?logo=argo&logoColor=white)
 ![GitOps](https://img.shields.io/badge/GitOps-App--of--Apps-brightgreen)
@@ -20,7 +20,7 @@ GitOps controller for the homelab Kubernetes cluster. ArgoCD watches Git repos a
                     ┌──────────────▼───────────────────┐
                     │            ArgoCD                 │
                     │   LoadBalancer: 192.168.56.20     │
-                    │   https://argocd.local            │
+                    │   https://argocd.homelab            │
                     └──┬───────┬───────┬───────┬───────┘
                        │       │       │       │  syncs
               ┌────────▼─┐ ┌───▼──┐ ┌──▼───┐ ┌▼──────┐
@@ -37,7 +37,7 @@ GitOps controller for the homelab Kubernetes cluster. ArgoCD watches Git repos a
 | Property | Value |
 |---|---|
 | Namespace | `argocd` |
-| Access | https://argocd.local |
+| Access | https://argocd.homelab |
 | LoadBalancer IP | `192.168.56.20` |
 | Helm chart | `argo/argo-cd` |
 | Admin password | from Vault (`argocd` engine, `admin` secret) |
@@ -116,7 +116,7 @@ kubectl annotate externalsecret -A --all force-sync=$(date +%s) --overwrite
 Automates certificate management for the whole cluster:
 
 - Generates a self-signed CA (`homelab-ca.crt`)
-- Creates TLS certs for: `argocd.local`, `grafana.local`, `vault.local`, `zot.local`
+- Creates TLS certs for: `argocd.homelab`, `grafana.homelab`, `vault.homelab`, `zot.homelab`
 - Stores each cert in Vault KV v2 (`tls` engine) so ExternalSecrets can distribute them to each namespace
 - Sets the ArgoCD admin password + server secret key in Vault KV v2 (`argocd` engine)
 
@@ -136,10 +136,10 @@ export VAULT_TOKEN=$(jq -r '.root_token' ~/vault-init.json)
 Add to `C:\Windows\System32\drivers\etc\hosts` (Windows) or `/etc/hosts` (WSL):
 
 ```
-192.168.56.20  argocd.local
-192.168.56.21  grafana.local
-192.168.56.22  vault.local
-192.168.56.23  zot.local
+192.168.56.20  argocd.homelab
+192.168.56.21  grafana.homelab
+192.168.56.22  vault.homelab
+192.168.56.23  zot.homelab
 ```
 
 ---
