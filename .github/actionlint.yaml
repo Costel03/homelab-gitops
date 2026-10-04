@@ -1,0 +1,4 @@
+self-hosted-runner:
+  # The runner in WSL next to Zot (homelab-cluster's github_runner role).
+  labels:
+  - zot

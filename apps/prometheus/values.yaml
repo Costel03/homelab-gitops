@@ -1,0 +1,32 @@
+# Metrics. Grafana reads it at prometheus-server.monitoring.svc.
+enabled: true
+namespace: monitoring
+syncWave: 0
+chart:
+  repository: https://prometheus-community.github.io/helm-charts
+  name: prometheus
+  version: 29.35.0
+values:
+  server:
+    persistentVolume:
+      enabled: true
+      size: 8Gi
+      storageClass: nfs-client
+    retention: 15d
+    global:
+      scrape_interval: 60s
+      evaluation_interval: 60s
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { cpu: 500m, memory: 1Gi }
+  alertmanager:
+    enabled: true
+    persistence:
+      size: 2Gi
+      storageClass: nfs-client
+  prometheus-pushgateway:
+    enabled: false
+  prometheus-node-exporter:
+    enabled: true
+  kube-state-metrics:
+    enabled: true

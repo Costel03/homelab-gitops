@@ -1,0 +1,26 @@
+# Provides the nfs-client StorageClass from the /share export on the master,
+# which homelab-cluster sets up. Default class, so PVCs need not name it.
+# csi-driver-nfs replaces nfs-subdir-external-provisioner, whose last image
+# (2021, Go 1.15) fails the scan gate and is no longer maintained.
+enabled: true
+namespace: kube-system
+syncWave: -1
+chart:
+  repository: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+  name: csi-driver-nfs
+  version: 4.13.4
+values:
+  controller:
+    replicas: 1
+  storageClass:
+    create: true
+    name: nfs-client
+    annotations:
+      storageclass.kubernetes.io/is-default-class: "true"
+    parameters:
+      server: 192.168.56.10
+      share: /share
+    reclaimPolicy: Retain
+    volumeBindingMode: Immediate
+    mountOptions:
+    - nfsvers=4.1

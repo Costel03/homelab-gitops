@@ -1,0 +1,16 @@
+# Resource metrics for kubectl top and the HPA in my-app.
+enabled: true
+namespace: kube-system
+syncWave: -1
+chart:
+  repository: https://kubernetes-sigs.github.io/metrics-server
+  name: metrics-server
+  version: 3.14.0
+values:
+  args:
+  # kubeadm's kubelet serving certs are self-signed.
+  - --kubelet-insecure-tls
+  - --kubelet-preferred-address-types=InternalIP
+  resources:
+    requests: { cpu: 25m, memory: 64Mi }
+    limits: { cpu: 100m, memory: 128Mi }

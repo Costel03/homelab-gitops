@@ -1,0 +1,46 @@
+# Two-step chain: a self-signed issuer mints the homelab CA, and the CA then
+# issues every service certificate. Wave 1, so they are applied after the
+# chart's CRDs and webhook in the same sync.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-bootstrap
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: homelab-ca
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  isCA: true
+  commonName: Homelab Root CA
+  subject:
+    organizations: [Homelab]
+  # 10 years — this is the cert you trust on Windows and in WSL, so renewing
+  # it means re-trusting it everywhere.
+  duration: 87600h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  secretName: homelab-ca-key-pair
+  issuerRef:
+    name: selfsigned-bootstrap
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: homelab-ca
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  ca:
+    secretName: homelab-ca-key-pair

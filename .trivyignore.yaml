@@ -1,0 +1,8 @@
+# Vulnerabilities accepted on purpose. Each entry needs a statement saying why,
+# and preferably expired_at so the decision gets revisited. Example:
+#
+# vulnerabilities:
+# - id: CVE-2026-12345
+#   statement: Only reachable through the ACME HTTP-01 solver, which is not used.
+#   expired_at: 2027-01-01
+vulnerabilities: []

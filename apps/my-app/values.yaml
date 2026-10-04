@@ -1,0 +1,31 @@
+# My own app — an nginx placeholder until it is written. Its chart lives in
+# chart/ here; CI packages it and pushes it to Zot. Bump chart/Chart.yaml's
+# version whenever anything under chart/ changes, or CI rejects the PR.
+enabled: true
+namespace: my-app
+syncWave: 0
+chart:
+  path: chart
+values:
+  image:
+    repository: nginx
+    tag: 1.30.5-alpine
+    pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 80
+    annotations:
+      metallb.io/loadBalancerIPs: 192.168.56.25
+  ingress:
+    enabled: true
+    className: traefik
+    host: my-app.homelab
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 200m, memory: 128Mi }

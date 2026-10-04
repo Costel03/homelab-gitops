@@ -1,0 +1,90 @@
+name: ci
+
+# Validation and scanning only — nothing is pushed anywhere. Runs on
+# GitHub-hosted runners, so a pull request (including one from a fork) never
+# touches the self-hosted runner that can write to Zot.
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+  # Weekly re-scan of everything: new CVEs land in images that have not changed.
+  - cron: '17 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+
+    - uses: ./.github/actions/setup-tools
+
+    - name: yamllint
+      run: pipx run yamllint==1.38.0 --strict .
+
+    - name: shellcheck
+      run: shellcheck scripts/*.sh .github/actions/setup-tools/install.sh
+
+    - name: actionlint
+      run: actionlint
+
+    - name: App-of-apps renders, Applications valid, local charts bumped
+      run: scripts/check-repo.sh "origin/${{ github.base_ref || 'main' }}"
+
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      apps: ${{ steps.apps.outputs.apps }}
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+
+    - uses: ./.github/actions/setup-tools
+
+    - name: Which apps to check
+      id: apps
+      env:
+        BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'all' }}
+      run: |
+        apps=$(scripts/changed-apps.sh "$BASE")
+        echo "apps=$apps" >> "$GITHUB_OUTPUT"
+        echo "Apps to check: $apps" >> "$GITHUB_STEP_SUMMARY"
+
+  check:
+    needs: plan
+    if: needs.plan.outputs.apps != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.plan.outputs.apps) }}
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+
+    - uses: ./.github/actions/setup-tools
+
+    - name: Cache the vulnerability database
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+      with:
+        path: ~/.cache/trivy
+        key: trivy-db-${{ github.run_id }}
+        restore-keys: trivy-db-
+
+    - name: Render, validate and scan ${{ matrix.app }}
+      run: scripts/app.sh check "${{ matrix.app }}"

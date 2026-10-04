@@ -1,0 +1,23 @@
+---
+extends: default
+
+# Helm templates are not YAML until rendered.
+ignore: |
+  apps/templates/
+  apps/*/chart/templates/
+  .out/
+
+rules:
+  line-length: disable
+  document-start: disable
+  truthy:
+    allowed-values: ['true', 'false']
+    check-keys: false
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: false
+  braces:
+    max-spaces-inside: 1
+  indentation:
+    spaces: 2
+    indent-sequences: whatever

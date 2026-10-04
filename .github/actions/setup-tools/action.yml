@@ -1,0 +1,11 @@
+name: setup-tools
+description: >-
+  Install the pinned helm, yq, crane, kubeconform, trivy and actionlint
+  binaries, checksum-verified. Cached in the tool cache, so the self-hosted
+  runner only downloads them once per version.
+runs:
+  using: composite
+  steps:
+  - name: Install tools
+    shell: bash
+    run: '"$GITHUB_ACTION_PATH/install.sh"'

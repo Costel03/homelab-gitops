@@ -1,0 +1,6 @@
+apiVersion: v2
+name: my-app
+description: Custom application
+type: application
+version: 0.2.0
+appVersion: "1.30.5"

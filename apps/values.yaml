@@ -1,0 +1,14 @@
+# Cluster-wide settings for the app-of-apps. Per-app settings live in
+# <app>/values.yaml next to this file. homelab-cluster's argocd_bootstrap role
+# passes the same three values as Helm parameters.
+repo:
+  url: https://github.com/Costel03/homelab-gitops.git
+  # CI moves this branch only after an app's chart and images are scanned and
+  # pushed to Zot, so ArgoCD never sees a version the registry does not have.
+  revision: deployed
+
+registry:
+  # Zot on the host, reachable from the nodes over the host-only network.
+  host: 192.168.56.1:5000
+  # Charts are pushed to <host>/<charts>/<name>:<version>.
+  charts: charts

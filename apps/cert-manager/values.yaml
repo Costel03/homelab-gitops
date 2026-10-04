@@ -1,0 +1,32 @@
+# Issues and renews every TLS certificate in the cluster from the homelab CA.
+# Must stay enabled — ArgoCD, Vault and Grafana all get their certificates here.
+enabled: true
+namespace: cert-manager
+syncWave: -2
+chart:
+  repository: https://charts.jetstack.io
+  name: cert-manager
+  version: v1.21.2
+# The CRDs exceed client-side apply's annotation size limit.
+syncOptions:
+- ServerSideApply=true
+values:
+  crds:
+    enabled: true
+    keep: true
+  replicaCount: 1
+  resources:
+    requests: { cpu: 25m, memory: 64Mi }
+    limits: { cpu: 100m, memory: 128Mi }
+  webhook:
+    replicaCount: 1
+    resources:
+      requests: { cpu: 25m, memory: 32Mi }
+      limits: { cpu: 100m, memory: 64Mi }
+  cainjector:
+    replicaCount: 1
+    resources:
+      requests: { cpu: 25m, memory: 64Mi }
+      limits: { cpu: 100m, memory: 128Mi }
+  startupapicheck:
+    enabled: true

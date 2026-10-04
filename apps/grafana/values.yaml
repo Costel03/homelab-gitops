@@ -1,0 +1,107 @@
+# Dashboards on https://grafana.homelab (192.168.56.21). The admin login comes
+# from Vault via manifests/external-secret.yaml, so the pod waits until
+# scripts/seed-vault-secrets.sh has run once. Last wave for that reason.
+# The chart moved to grafana-community in 2026; the grafana repo copy is
+# deprecated.
+enabled: true
+namespace: monitoring
+syncWave: 3
+chart:
+  repository: https://grafana-community.github.io/helm-charts
+  name: grafana
+  version: 13.2.7
+values:
+  admin:
+    existingSecret: grafana-admin-secret
+    userKey: admin-user
+    passwordKey: admin-password
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: nfs-client
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { cpu: 200m, memory: 256Mi }
+  service:
+    type: LoadBalancer
+    port: 443
+    targetPort: 3000
+    annotations:
+      metallb.io/loadBalancerIPs: 192.168.56.21
+  ingress:
+    enabled: false
+  extraSecretMounts:
+  - name: grafana-tls
+    secretName: grafana-tls
+    mountPath: /etc/grafana/tls
+    readOnly: true
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-server.monitoring.svc.cluster.local
+        access: proxy
+        isDefault: true
+        jsonData:
+          timeInterval: 60s
+      - name: Loki
+        type: loki
+        url: http://loki.monitoring.svc.cluster.local:3100
+        access: proxy
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: default
+        orgId: 1
+        folder: ""
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+  dashboards:
+    default:
+      # Node Exporter Full — hardware/OS metrics per node
+      node-exporter-full:
+        gnetId: 1860
+        revision: 37
+        datasource: Prometheus
+      # Kubernetes cluster overview — pods, deployments, resources
+      kubernetes-overview:
+        gnetId: 7249
+        revision: 1
+        datasource: Prometheus
+      # Loki log search & stats
+      loki-logs:
+        gnetId: 13639
+        revision: 2
+        datasource: Loki
+  grafana.ini:
+    server:
+      protocol: https
+      cert_file: /etc/grafana/tls/tls.crt
+      cert_key: /etc/grafana/tls/tls.key
+      domain: grafana.homelab
+      root_url: https://grafana.homelab/
+    security:
+      disable_gravatar: true
+      cookie_secure: true
+    analytics:
+      reporting_enabled: false
+      check_for_updates: false
+  readinessProbe:
+    httpGet:
+      path: /api/health
+      port: 3000
+      scheme: HTTPS
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: 3000
+      scheme: HTTPS
+    initialDelaySeconds: 60
+    timeoutSeconds: 30
+    failureThreshold: 10

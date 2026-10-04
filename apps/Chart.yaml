@@ -1,0 +1,5 @@
+apiVersion: v2
+name: apps
+description: Turns every apps/<name>/values.yaml into an ArgoCD Application
+type: application
+version: 2.0.0

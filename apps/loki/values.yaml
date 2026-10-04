@@ -1,0 +1,48 @@
+# Logs, single process. Grafana reads it at loki.monitoring.svc:3100.
+# The chart moved to grafana-community in 2026; the grafana repo copy is frozen.
+enabled: true
+namespace: monitoring
+syncWave: 0
+chart:
+  repository: https://grafana-community.github.io/helm-charts
+  name: loki
+  version: 18.13.7
+values:
+  deploymentMode: Monolithic
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: filesystem
+    schemaConfig:
+      configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+  singleBinary:
+    replicas: 1
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: nfs-client
+    resources:
+      requests: { cpu: 50m, memory: 128Mi }
+      limits: { cpu: 200m, memory: 256Mi }
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  backend:
+    replicas: 0
+  gateway:
+    enabled: false
+  # memcached is too heavy for this cluster.
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false

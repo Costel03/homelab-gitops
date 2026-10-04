@@ -1,0 +1,99 @@
+name: publish
+
+# After a change reaches main: render, validate and scan every app that differs
+# from what is deployed, push its chart and images to Zot, then move the
+# `deployed` branch — the only branch ArgoCD watches. An app that fails the
+# gate keeps `deployed` where it is, so the cluster never sees a version that
+# is not in Zot.
+on:
+  push:
+    branches: [main]
+    paths:
+    - apps/**
+    - scripts/**
+    - .github/**
+    - .trivyignore.yaml
+  workflow_dispatch:
+    inputs:
+      all:
+        description: Re-publish every app (after a Zot wipe, or the first run)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# One at a time, in order: each run compares against what the previous one
+# deployed.
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      apps: ${{ steps.apps.outputs.apps }}
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+
+    - uses: ./.github/actions/setup-tools
+
+    - name: Apps that differ from what is deployed
+      id: apps
+      env:
+        BASE: ${{ inputs.all && 'all' || 'origin/deployed' }}
+      run: |
+        apps=$(scripts/changed-apps.sh "$BASE")
+        echo "apps=$apps" >> "$GITHUB_OUTPUT"
+        echo "Apps to publish: $apps" >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    needs: plan
+    if: needs.plan.outputs.apps != '[]'
+    # The runner in WSL next to Zot. Its .env provides ZOT_REGISTRY, ZOT_USER
+    # and ZOT_PASSWORD_FILE.
+    runs-on: [self-hosted, linux, zot]
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        app: ${{ fromJSON(needs.plan.outputs.apps) }}
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+
+    - uses: ./.github/actions/setup-tools
+
+    - name: Render, validate, scan and push ${{ matrix.app }}
+      run: scripts/app.sh publish "${{ matrix.app }}"
+
+  promote:
+    needs: [plan, publish]
+    # Also when there was nothing to publish (a change to the app-of-apps
+    # chart itself), but never after a failed publish.
+    if: >-
+      always()
+      && needs.plan.result == 'success'
+      && (needs.publish.result == 'success' || needs.publish.result == 'skipped')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        fetch-depth: 0
+
+    # The commit this run verified — not whatever main points at now. A plain
+    # push, so it fails rather than rewinding if deployed has moved oddly.
+    - name: Move deployed to ${{ github.sha }}
+      run: |
+        git push origin "${GITHUB_SHA}:refs/heads/deployed"
+        echo "deployed -> \`${GITHUB_SHA}\`" >> "$GITHUB_STEP_SUMMARY"

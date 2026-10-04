@@ -1,0 +1,74 @@
+# Unseals Vault whenever it comes back sealed — after a pod restart or a
+# laptop reboot. Reads the key from the vault-unseal-key Secret that
+# `make vault` creates; until then it waits instead of failing, so the
+# Application stays Healthy and later sync waves are not blocked.
+#
+# Talks to the pod through the headless -internal Service: the main Service
+# only lists Ready pods, and a sealed pod is exactly when this must reach it.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-auto-unseal
+  namespace: hashicorp-vault
+  labels:
+    app: vault-auto-unseal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-auto-unseal
+  template:
+    metadata:
+      labels:
+        app: vault-auto-unseal
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 100
+        runAsGroup: 101
+      containers:
+      # Plain HTTP API calls, so this does not depend on the Vault image —
+      # whose binary needs IPC_LOCK since 2.0 — or on its version.
+      - name: auto-unseal
+        image: curlimages/curl:8.22.0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            if [ -s /vault/unseal/key ]; then
+              status=$(curl -s --max-time 5 "$VAULT_ADDR/v1/sys/seal-status" || true)
+              if echo "$status" | grep -q '"initialized":true' \
+                && echo "$status" | grep -q '"sealed":true'; then
+                echo "Vault is sealed, unsealing"
+                printf '{"key":"%s"}' "$(cat /vault/unseal/key)" \
+                  | curl -s --max-time 5 -X PUT --data @- "$VAULT_ADDR/v1/sys/unseal" >/dev/null \
+                  && echo "unseal request sent"
+              fi
+            fi
+            sleep 10
+          done
+        env:
+        - name: VAULT_ADDR
+          value: http://hashicorp-vault-0.hashicorp-vault-internal.hashicorp-vault.svc.cluster.local:8200
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: [ALL]
+        volumeMounts:
+        - name: unseal-key
+          mountPath: /vault/unseal
+          readOnly: true
+        resources:
+          requests: { cpu: 10m, memory: 16Mi }
+          limits: { cpu: 50m, memory: 32Mi }
+      volumes:
+      - name: unseal-key
+        secret:
+          secretName: vault-unseal-key
+          optional: true
+          items:
+          - key: key
+            path: key

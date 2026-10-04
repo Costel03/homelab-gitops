@@ -1,0 +1,33 @@
+# Ingress controller on 192.168.56.22 — serves vault.homelab and my-app.homelab.
+# Replaces ingress-nginx, which was retired upstream in March 2026: its last
+# release carries an OpenSSL CVE that will never be patched.
+enabled: true
+namespace: traefik
+syncWave: 0
+chart:
+  repository: https://traefik.github.io/charts
+  name: traefik
+  version: 41.6.1
+values:
+  ingressClass:
+    enabled: true
+    isDefaultClass: true
+    name: traefik
+  providers:
+    kubernetesIngress:
+      enabled: true
+  service:
+    type: LoadBalancer
+    annotations:
+      metallb.io/loadBalancerIPs: 192.168.56.22
+  ports:
+    web:
+      http:
+        redirections:
+          entryPoint:
+            to: websecure
+            scheme: https
+            permanent: true
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 200m, memory: 128Mi }

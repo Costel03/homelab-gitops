@@ -1,0 +1,45 @@
+# Secrets store. `make vault` in homelab-cluster initialises and unseals it —
+# the unseal key exists only once, so that step cannot be declarative.
+# manifests/ holds its certificate and the auto-unseal Deployment.
+enabled: true
+namespace: hashicorp-vault
+syncWave: 1
+chart:
+  repository: https://helm.releases.hashicorp.com
+  name: vault
+  version: 0.34.1
+values:
+  server:
+    # The chart's default image (2.0.4). Every 1.21.x image fails the scan
+    # gate on fixable CRITICAL CVEs, and 1.21 is the last 1.x line.
+    resources:
+      requests: { cpu: 50m, memory: 256Mi }
+      limits: { cpu: 200m, memory: 512Mi }
+    # Ready while sealed or uninitialised. With the default probe the pod is
+    # never Ready until `make vault` runs, so the Application stays
+    # Progressing and blocks every later sync wave on a manual step.
+    readinessProbe:
+      enabled: true
+      path: /v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204
+    ha:
+      enabled: false
+    service:
+      type: ClusterIP
+      port: 8200
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hosts:
+      - host: vault.homelab
+        paths:
+        - /
+      tls:
+      - secretName: vault-tls
+        hosts:
+        - vault.homelab
+  ui:
+    enabled: true
+    serviceType: ClusterIP
+  # Sidecar injector is unused and costs memory on a small cluster.
+  injector:
+    enabled: false

@@ -1,0 +1,83 @@
+{{- /*
+One Application per <app>/values.yaml. Each file holds everything about that
+app: whether it is enabled, its namespace and sync wave, which chart and
+version to run, and the values passed to that chart. Raw manifests in
+<app>/manifests/ are synced alongside the chart.
+
+The chart always comes from Zot: CI pulls it from chart.repository (or
+packages chart.path), scans it and pushes it there before this file is
+deployed.
+*/ -}}
+{{- range $path, $_ := .Files.Glob "*/values.yaml" }}
+{{- $name := dir $path }}
+{{- $app := $.Files.Get $path | fromYaml }}
+{{- if $app.enabled }}
+{{- $chart := dict }}
+{{- with $app.chart }}
+{{-   if .path }}
+{{-     $meta := $.Files.Get (printf "%s/%s/Chart.yaml" $name .path) | fromYaml }}
+{{-     $chart = dict "name" $meta.name "version" $meta.version }}
+{{-   else }}
+{{-     $chart = dict "name" (required (printf "%s: chart.name is required" $path) .name) "version" (required (printf "%s: chart.version is required" $path) .version) }}
+{{-   end }}
+{{- end }}
+{{- $manifests := $.Files.Glob (printf "%s/manifests/*.yaml" $name) }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $name }}
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: {{ $app.syncWave | default 0 | toString | quote }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+  {{- if $chart.name }}
+  - repoURL: {{ printf "%s/%s" $.Values.registry.host $.Values.registry.charts }}
+    chart: {{ $chart.name }}
+    targetRevision: {{ $chart.version | toString | quote }}
+    helm:
+      releaseName: {{ $name }}
+      {{- with $app.values }}
+      valuesObject:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- end }}
+  {{- if $manifests }}
+  - repoURL: {{ $.Values.repo.url }}
+    targetRevision: {{ $.Values.repo.revision }}
+    path: apps/{{ $name }}/manifests
+  {{- end }}
+  {{- if not (or $chart.name $manifests) }}
+  {{- fail (printf "%s: needs a chart, a manifests/ directory, or both" $path) }}
+  {{- end }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ required (printf "%s: namespace is required" $path) $app.namespace }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    # CRDs installed by an earlier wave are not visible to the dry run of a
+    # later one on the very first sync.
+    - SkipDryRunOnMissingResource=true
+    {{- range $app.syncOptions }}
+    - {{ . }}
+    {{- end }}
+    retry:
+      limit: 10
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 5m
+  {{- with $app.ignoreDifferences }}
+  ignoreDifferences:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

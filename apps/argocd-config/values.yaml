@@ -1,0 +1,6 @@
+# ArgoCD's own extras: its TLS certificate and the admin password from Vault.
+# The ArgoCD release itself is installed by homelab-cluster, because it has to
+# exist before anything here can sync. No chart — manifests/ only.
+enabled: true
+namespace: argocd
+syncWave: 3

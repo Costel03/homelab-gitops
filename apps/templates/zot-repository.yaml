@@ -1,0 +1,19 @@
+# Registers Zot's chart path with ArgoCD. Pulls are anonymous, so there are no
+# credentials here. Zot speaks plain HTTP on the host-only network, and Helm 4
+# (bundled since ArgoCD 3.5) refuses that unless insecureOCIForceHttp is set.
+# Do not also set `insecure: "true"` — Helm 4 then silently drops --plain-http.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zot-charts
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+stringData:
+  name: zot
+  type: helm
+  url: {{ printf "%s/%s" .Values.registry.host .Values.registry.charts }}
+  enableOCI: "true"
+  insecureOCIForceHttp: "true"

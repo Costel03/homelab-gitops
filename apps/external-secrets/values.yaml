@@ -1,0 +1,25 @@
+# Copies secrets out of Vault into Kubernetes Secrets. Authenticates with the
+# vault-token Secret that `make vault` creates in this namespace.
+# manifests/ holds the ClusterSecretStore pointing at Vault.
+enabled: true
+namespace: eso
+syncWave: 2
+chart:
+  repository: https://charts.external-secrets.io
+  name: external-secrets
+  version: 2.11.0
+values:
+  replicaCount: 1
+  installCRDs: true
+  leaderElect: true
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 100m, memory: 128Mi }
+  webhook:
+    resources:
+      requests: { cpu: 25m, memory: 64Mi }
+      limits: { cpu: 100m, memory: 128Mi }
+  certController:
+    resources:
+      requests: { cpu: 25m, memory: 64Mi }
+      limits: { cpu: 100m, memory: 128Mi }
