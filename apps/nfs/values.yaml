@@ -10,6 +10,12 @@ chart:
   name: csi-driver-nfs
   version: 4.13.4
 values:
+  image:
+    nfs:
+      # The chart's v4.13.4 image fails the scan gate (perl-base CVEs in its
+      # Debian base). v4.13.5 is the same driver rebuilt; drop this override
+      # once a chart release ships it.
+      tag: v4.13.5
   controller:
     replicas: 1
   storageClass:
