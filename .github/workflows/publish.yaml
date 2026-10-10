@@ -43,6 +43,11 @@ jobs:
 
     - uses: ./.github/actions/setup-tools
 
+    # Also here, not only in ci: a direct push to main never runs ci, and a
+    # broken app-of-apps would otherwise only show up as an ArgoCD error.
+    - name: App-of-apps renders, Applications valid, local charts bumped
+      run: scripts/check-repo.sh origin/deployed
+
     - name: Apps that differ from what is deployed
       id: apps
       env:
