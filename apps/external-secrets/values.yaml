@@ -8,6 +8,9 @@ chart:
   repository: https://charts.external-secrets.io
   name: external-secrets
   version: 2.11.0
+# The SecretStore CRDs exceed client-side apply's 256 KB annotation limit.
+syncOptions:
+- ServerSideApply=true
 values:
   replicaCount: 1
   installCRDs: true
