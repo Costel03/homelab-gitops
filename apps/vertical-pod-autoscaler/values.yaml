@@ -21,14 +21,19 @@ values:
         name: homelab-ca
         kind: ClusterIssuer
         group: cert-manager.io
+    # The chart runs two of each component for HA; one is plenty here.
+    # Measured ~10Mi each.
+    replicas: 1
     resources:
-      requests: { cpu: 25m, memory: 64Mi }
-      limits: { cpu: 100m, memory: 128Mi }
+      requests: { cpu: 10m, memory: 24Mi }
+      limits: { memory: 128Mi }
   recommender:
+    replicas: 1
     resources:
-      requests: { cpu: 25m, memory: 64Mi }
-      limits: { cpu: 100m, memory: 256Mi }
+      requests: { cpu: 10m, memory: 32Mi }
+      limits: { memory: 256Mi }
   updater:
+    replicas: 1
     resources:
-      requests: { cpu: 25m, memory: 64Mi }
-      limits: { cpu: 100m, memory: 128Mi }
+      requests: { cpu: 10m, memory: 24Mi }
+      limits: { memory: 128Mi }

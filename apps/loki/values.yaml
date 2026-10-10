@@ -30,9 +30,10 @@ values:
       enabled: true
       size: 10Gi
       storageClass: nfs-client
+    # ~72Mi with no logs flowing yet; ingestion buffers chunks in memory.
     resources:
-      requests: { cpu: 50m, memory: 128Mi }
-      limits: { cpu: 200m, memory: 256Mi }
+      requests: { cpu: 25m, memory: 128Mi }
+      limits: { memory: 512Mi }
   read:
     replicas: 0
   write:
@@ -41,6 +42,16 @@ values:
     replicas: 0
   gateway:
     enabled: false
+  # The canary DaemonSet writes synthetic logs to measure Loki; the test
+  # depends on it. Neither is useful here.
+  lokiCanary:
+    enabled: false
+  test:
+    enabled: false
+  sidecar:
+    resources:
+      requests: { cpu: 5m, memory: 32Mi }
+      limits: { memory: 128Mi }
   # memcached is too heavy for this cluster.
   chunksCache:
     enabled: false

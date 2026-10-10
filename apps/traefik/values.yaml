@@ -28,6 +28,7 @@ values:
             to: websecure
             scheme: https
             permanent: true
+  # Measured ~22Mi idle; it buffers requests, so the limit has headroom.
   resources:
-    requests: { cpu: 50m, memory: 64Mi }
-    limits: { cpu: 200m, memory: 128Mi }
+    requests: { cpu: 20m, memory: 48Mi }
+    limits: { memory: 192Mi }

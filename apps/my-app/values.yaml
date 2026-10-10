@@ -26,6 +26,8 @@ values:
     minReplicas: 2
     maxReplicas: 10
     targetCPUUtilizationPercentage: 80
+  # nginx idles at ~4Mi. The HPA scales on CPU use as a share of the
+  # request, so a realistic request also makes its target meaningful.
   resources:
-    requests: { cpu: 50m, memory: 64Mi }
-    limits: { cpu: 200m, memory: 128Mi }
+    requests: { cpu: 10m, memory: 16Mi }
+    limits: { memory: 64Mi }

@@ -15,14 +15,15 @@ values:
   replicaCount: 1
   installCRDs: true
   leaderElect: true
+  # Measured ~33Mi per component.
   resources:
-    requests: { cpu: 50m, memory: 64Mi }
-    limits: { cpu: 100m, memory: 128Mi }
+    requests: { cpu: 20m, memory: 48Mi }
+    limits: { memory: 256Mi }
   webhook:
     resources:
-      requests: { cpu: 25m, memory: 64Mi }
-      limits: { cpu: 100m, memory: 128Mi }
+      requests: { cpu: 10m, memory: 40Mi }
+      limits: { memory: 128Mi }
   certController:
     resources:
-      requests: { cpu: 25m, memory: 64Mi }
-      limits: { cpu: 100m, memory: 128Mi }
+      requests: { cpu: 10m, memory: 40Mi }
+      limits: { memory: 128Mi }

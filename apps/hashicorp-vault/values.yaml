@@ -12,9 +12,10 @@ values:
   server:
     # The chart's default image (2.0.4). Every 1.21.x image fails the scan
     # gate on fixable CRITICAL CVEs, and 1.21 is the last 1.x line.
+    # ~40Mi sealed; an unsealed, small KV store sits around 100-150Mi.
     resources:
-      requests: { cpu: 50m, memory: 256Mi }
-      limits: { cpu: 200m, memory: 512Mi }
+      requests: { cpu: 25m, memory: 128Mi }
+      limits: { memory: 512Mi }
     # Ready while sealed or uninitialised. With the default probe the pod is
     # never Ready until `make vault` runs, so the Application stays
     # Progressing and blocks every later sync wave on a manual step.

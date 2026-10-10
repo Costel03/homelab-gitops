@@ -16,17 +16,35 @@ values:
     global:
       scrape_interval: 60s
       evaluation_interval: 60s
+    # ~262Mi on a new cluster; the head block grows with series, so the
+    # limit leaves room for it.
     resources:
-      requests: { cpu: 100m, memory: 256Mi }
-      limits: { cpu: 500m, memory: 1Gi }
+      requests: { cpu: 50m, memory: 320Mi }
+      limits: { memory: 1Gi }
+  configmapReload:
+    prometheus:
+      resources:
+        requests: { cpu: 5m, memory: 16Mi }
+        limits: { memory: 64Mi }
+  # The subcharts below set no resources at all, which makes them BestEffort:
+  # first to be evicted, and invisible to the scheduler.
   alertmanager:
     enabled: true
     persistence:
       size: 2Gi
       storageClass: nfs-client
+    resources:
+      requests: { cpu: 5m, memory: 24Mi }
+      limits: { memory: 128Mi }
   prometheus-pushgateway:
     enabled: false
   prometheus-node-exporter:
     enabled: true
+    resources:
+      requests: { cpu: 10m, memory: 16Mi }
+      limits: { memory: 64Mi }
   kube-state-metrics:
     enabled: true
+    resources:
+      requests: { cpu: 10m, memory: 32Mi }
+      limits: { memory: 128Mi }

@@ -19,9 +19,10 @@ values:
     enabled: true
     size: 5Gi
     storageClass: nfs-client
+  # Grafana 13 with three dashboards sits around 120-180Mi.
   resources:
-    requests: { cpu: 50m, memory: 128Mi }
-    limits: { cpu: 200m, memory: 256Mi }
+    requests: { cpu: 25m, memory: 128Mi }
+    limits: { memory: 384Mi }
   service:
     type: LoadBalancer
     port: 443

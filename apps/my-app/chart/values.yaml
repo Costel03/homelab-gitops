@@ -23,10 +23,11 @@ hpa:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
 
+# No CPU limit: Helm merges these with the deployed values, so a limit here
+# could not be removed from ../values.yaml.
 resources:
   requests:
-    cpu: 50m
-    memory: 64Mi
+    cpu: 10m
+    memory: 16Mi
   limits:
-    cpu: 200m
-    memory: 128Mi
+    memory: 64Mi
