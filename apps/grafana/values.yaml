@@ -19,6 +19,11 @@ values:
     enabled: true
     size: 5Gi
     storageClass: nfs-client
+  # Stop the old pod before starting the new one. RollingUpdate overlaps
+  # them, ReadWriteOnce is not enforced on NFS, and two Grafanas migrating one
+  # SQLite file fail with "database is locked (SQLITE_BUSY)".
+  deploymentStrategy:
+    type: Recreate
   # Grafana 13 with three dashboards sits around 120-180Mi.
   resources:
     requests: { cpu: 25m, memory: 128Mi }
