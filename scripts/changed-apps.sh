@@ -25,10 +25,10 @@ if grep -qE '^(scripts/|\.github/|\.trivyignore\.yaml$)' <<<"$changed"; then
   exit 0
 fi
 
-{
-  grep -oE '^apps/[^/]+/' <<<"$changed" | cut -d/ -f2 | sort -u | while read -r app; do
-    if [[ -f $(app_file "$app") ]] && app_enabled "$app"; then
-      echo "$app"
-    fi
-  done
-} | to_json
+# `|| true`: nothing under apps/ changed is a normal answer ([]), but grep
+# exits 1 on no match and pipefail would turn that into a failed step.
+{ grep -oE '^apps/[^/]+/' <<<"$changed" || true; } | cut -d/ -f2 | sort -u | while read -r app; do
+  if [[ -f $(app_file "$app") ]] && app_enabled "$app"; then
+    echo "$app"
+  fi
+done | to_json
